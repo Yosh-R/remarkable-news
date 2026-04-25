@@ -1,0 +1,72 @@
+name: Daily News Delivery
+
+# This workflow fetches news from the publications listed in recipes.txt,
+# converts each one to an EPUB using Calibre, and uploads the result to
+# the /News folder of your reMarkable cloud account via rmapi.
+
+on:
+  schedule:
+    # 10:30 UTC daily.
+    #
+    # In Mountain Daylight Time (UTC-6, mid-March to early November)
+    # this is 4:30 AM local. In Mountain Standard Time (UTC-7, the rest
+    # of the year) this is 3:30 AM local. GitHub's scheduled workflows
+    # are best-effort and can be delayed 15+ minutes during peak load,
+    # which is why we run roughly 90 minutes before the 6:00 AM target.
+    - cron: '30 10 * * *'
+
+  # Allow manual runs from the Actions tab. Useful for the first test
+  # and any time you want to force a fresh fetch.
+  workflow_dispatch:
+
+jobs:
+  deliver:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Calibre
+        run: |
+          sudo apt-get update -qq
+          # Calibre 7+ pulls in a few graphics libraries even for headless
+          # use. Installing them up front keeps the installer happy.
+          sudo apt-get install -y --no-install-recommends \
+            libegl1 libopengl0 libxcb-cursor0
+          # The official installer pulls the latest Calibre, which has
+          # more current news recipes than Ubuntu's apt package.
+          wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh \
+            | sudo sh /dev/stdin
+
+      - name: Install rmapi
+        run: |
+          # ddvk's fork is the actively-maintained one that handles
+          # reMarkable's current sync protocol. The juruen/ original
+          # is archived.
+          go install github.com/ddvk/rmapi@latest
+          sudo mv "$(go env GOPATH)/bin/rmapi" /usr/local/bin/rmapi
+          rmapi version || true
+
+      - name: Configure rmapi authentication
+        env:
+          RMAPI_CONFIG_SECRET: ${{ secrets.RMAPI_CONFIG }}
+        run: |
+          if [ -z "$RMAPI_CONFIG_SECRET" ]; then
+            echo "::error::RMAPI_CONFIG secret is not set. See README.md for setup."
+            exit 1
+          fi
+          mkdir -p "$HOME/.config/rmapi"
+          # printf '%s' avoids adding an extra trailing newline that
+          # some rmapi versions choke on.
+          printf '%s' "$RMAPI_CONFIG_SECRET" > "$HOME/.config/rmapi/rmapi.conf"
+          chmod 600 "$HOME/.config/rmapi/rmapi.conf"
+
+      - name: Ensure /News folder exists on reMarkable
+        run: |
+          # mkdir is idempotent for our purposes; ignore "already exists".
+          rmapi mkdir /News || true
+
+      - name: Fetch news and upload
+        run: bash ./fetch-news.sh
