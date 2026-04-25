@@ -23,4 +23,5 @@
 #   aljazeera      Al Jazeera
 
 npr  NPR
-chinadaily   China Daily
+viet_nam_news  Viet Nam News
+
