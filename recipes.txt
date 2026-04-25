@@ -1,0 +1,25 @@
+# Daily news sources. One publication per line.
+#
+# Format:
+#   <recipe-slug>  <display name>
+#
+# <recipe-slug> is the filename (without ".recipe") of a recipe in
+# Calibre's official repository:
+#     https://github.com/kovidgoyal/calibre/tree/master/recipes
+#
+# <display name> is what shows up in the file title on your reMarkable.
+# Spaces are allowed.
+#
+# Lines starting with # and blank lines are ignored.
+#
+# To add a publication later, find its .recipe file in the link above
+# and add a line here. Examples (uncomment to enable):
+#
+#   guardian       The Guardian
+#   ap             Associated Press
+#   bbc            BBC News
+#   reuters        Reuters
+#   propublica     ProPublica
+#   aljazeera      Al Jazeera
+
+npr  NPR
