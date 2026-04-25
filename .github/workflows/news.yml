@@ -42,12 +42,15 @@ jobs:
 
       - name: Install rmapi
         run: |
-          # ddvk's fork is the actively-maintained one that handles
-          # reMarkable's current sync protocol. The juruen/ original
-          # is archived.
-          go install github.com/ddvk/rmapi@latest
-          sudo mv "$(go env GOPATH)/bin/rmapi" /usr/local/bin/rmapi
-          rmapi version || true
+             # Download the pre-built Linux binary from the latest release.
+             # `go install` doesn't work because rmapi's go.mod uses replace
+             # directives, which Go's install path rejects.
+             wget -nv -O /tmp/rmapi.tar.gz \
+               "https://github.com/ddvk/rmapi/releases/latest/download/rmapi-linuxx86-64.tar.gz"
+             tar -xzf /tmp/rmapi.tar.gz -C /tmp
+             sudo mv /tmp/rmapi /usr/local/bin/rmapi
+             sudo chmod +x /usr/local/bin/rmapi
+             rmapi version || true
 
       - name: Configure rmapi authentication
         env:
