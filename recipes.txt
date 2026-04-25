@@ -20,8 +20,9 @@
 #   bbc            BBC News
 #   reuters        Reuters
 #   propublica     ProPublica
-#   aljazeera      Al Jazeera
+aljazeera      Al Jazeera
 
 npr  NPR
-vietnam_news  Viet Nam News
+viet_nam_news_en  Viet Nam News
+
 
