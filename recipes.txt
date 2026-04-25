@@ -23,5 +23,5 @@
 #   aljazeera      Al Jazeera
 
 npr  NPR
-viet_nam_news  Viet Nam News
+vietnam_news  Viet Nam News
 
